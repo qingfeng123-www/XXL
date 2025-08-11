@@ -1,0 +1,1144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>开心消消乐 - 终极修复版</title>
+    <style>
+        /* 内联样式确保不依赖外部CSS文件 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .screen {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .screen.hidden {
+            display: none;
+        }
+
+        .game-title {
+            font-size: 3em;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 10px;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+            color: white;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(78, 205, 196, 0.6);
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 300px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .game-screen {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-canvas {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            background: #fff;
+            border: 3px solid #fff;
+        }
+
+        .game-info {
+            min-width: 250px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 123, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 1.1em;
+        }
+
+        .level-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+            gap: 10px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .level-btn {
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 15px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+            color: #495057;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .level-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            color: white;
+        }
+
+        .level-btn.completed {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+
+        .level-btn.completed:hover {
+            background: linear-gradient(45deg, #1e7e34, #17a2b8);
+            transform: scale(1.1);
+        }
+
+        .level-btn.completed::after {
+            content: '✓';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.8em;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .error-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10000;
+            text-align: center;
+            font-size: 18px;
+            max-width: 400px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.5em;
+            color: #666;
+        }
+
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            max-width: 300px;
+        }
+
+        /* 浮动提示与层 */
+        .tip-layer{position:absolute;left:0;top:0;width:500px;height:500px;pointer-events:none;}
+        .floating-tip{position:absolute;font-weight:bold;font-size:18px;color:#fff;text-shadow:0 0 6px #000;opacity:0;animation:tipFloat 1.2s ease-out forwards;}
+        @keyframes tipFloat{0%{transform:translate(-50%,0) scale(0.9);opacity:0;}15%{opacity:1;}80%{opacity:1;}100%{transform:translate(-50%,-60px) scale(1.1);opacity:0;}}
+
+        /* 音频解锁按钮动画 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px #2196F3; }
+            50% { box-shadow: 0 0 20px #2196F3, 0 0 30px #2196F3; }
+        }
+
+        .tool-bar{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+        .tool-btn{padding:8px 14px;font-size:.9em;border-radius:25px;border:none;cursor:pointer;background:#444;color:#fff;transition:.25s;}
+        .tool-btn.active{background:#ff9800;box-shadow:0 0 10px #ff9800aa;}
+        .line-effect{position:absolute;left:0;top:0;pointer-events:none;}
+
+        @media (max-width: 768px) {
+            .game-screen {
+                flex-direction: column;
+            }
+            .game-info {
+                min-width: unset;
+                width: 100%;
+                order: -1;
+            }
+            .level-grid {
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="debugInfo" class="debug-info">正在加载游戏...</div>
+
+    <div class="container">
+        <!-- 主菜单界面 -->
+        <div id="mainMenu" class="screen">
+            <h1 class="game-title">🎮 开心消消乐</h1>
+            <p style="text-align: center; font-size: 1.2em; color: #666; margin-bottom: 30px;">
+                经典三消游戏，100个关卡等你挑战！
+            </p>
+            <div class="menu-buttons">
+                <button id="startGameBtn" class="btn btn-primary">
+                    🚀 开始游戏
+                </button>
+                <button id="levelSelectBtn" class="btn btn-secondary">
+                    🎯 选择关卡
+                </button>
+                <button id="freePlayBtn" class="btn btn-secondary">
+                    ♾️ 自由模式
+                </button>
+            </div>
+        </div>
+
+        <!-- 关卡选择界面 -->
+        <div id="levelSelect" class="screen hidden">
+            <h2 style="text-align: center; margin-bottom: 20px;">🎯 选择关卡</h2>
+            <div id="levelGrid" class="level-grid"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="backToMenuBtn" class="btn btn-secondary">
+                    🏠 返回主菜单
+                </button>
+            </div>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="gameScreen" class="screen game-screen hidden">
+            <!-- 游戏信息面板 -->
+            <div class="game-info">
+                <div class="info-section">
+                    <h3>📊 游戏状态</h3>
+                    <div class="stat-item">
+                        <span>关卡</span>
+                        <span id="currentLevel" class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>分数</span>
+                        <span id="score" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>剩余步数</span>
+                        <span id="moves" class="stat-value">30</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>连锁</span>
+                        <span id="chainInfo" class="stat-value">-</span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>🎯 目标</h3>
+                    <div id="objective">达到 2000 分</div>
+                </div>
+
+                <div class="info-section">
+                    <h3>🎮 控制</h3>
+                    <div style="text-align: center;">
+                        <button id="restartBtn" class="btn btn-primary">🔄 重启</button>
+                        <button id="muteBtn" class="btn btn-secondary">🔊 静音</button>
+                        <button id="loadAudioBtn" class="btn btn-secondary">🎵 音效包</button>
+                        <button id="backToLevelSelectBtn" class="btn btn-secondary">📋 返回</button>
+                        <input id="audioFileInput" type="file" accept="audio/*" multiple style="display:none;" />
+                        <div class="tool-bar">
+                            <!-- 移除锤子，仅保留洗牌与彩虹一次性道具 -->
+                            <button id="toolShuffle" class="tool-btn" title="洗牌: 重新打乱棋盘">🔁 洗牌</button>
+                            <button id="toolColorBomb" class="tool-btn" title="一次性：将点击的宝石变成彩虹">🌈 变彩虹</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 游戏区域 -->
+            <div class="game-area">
+                <canvas id="gameCanvas" class="game-canvas" width="500" height="500"></canvas>
+                <div id="tipLayer" class="tip-layer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 音频元素: 添加内置base64或占位音源 -->
+    <audio id="bgMusic" loop src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAALGFuYwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAA" preload="auto"></audio>
+    <audio id="popSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAALGFuYwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAA" preload="auto"></audio>
+    <audio id="comboSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAALGFuYwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAA" preload="auto"></audio>
+    <audio id="winSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAALGFuYwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAA" preload="auto"></audio>
+    <audio id="loseSound" src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAALGFuYwAAAA8AAAACAAACcQCA//////////////////////////////////////////8AAAAA" preload="auto"></audio>
+
+    <script>
+        // 全局游戏对象 - 内嵌实现确保可靠性
+        let GameEngine = null;
+        let isGameInitialized = false;
+        
+        // 调试日志函数
+        function debugLog(message, type = 'info') {
+            const debugDiv = document.getElementById('debugInfo');
+            if (debugDiv) {
+                const timestamp = new Date().toLocaleTimeString();
+                debugDiv.innerHTML = `[${timestamp}] ${message}`;
+            }
+            console.log(`[GAME] ${message}`);
+        }
+
+        // 错误处理函数
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-popup';
+            errorDiv.innerHTML = `
+                <h3>⚠️ 错误</h3>
+                <p>${message}</p>
+                <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 10px;">
+                    🔄 刷新重试
+                </button>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.parentNode.removeChild(errorDiv);
+                }
+            }, 5000);
+        }
+
+        // 简化的UI控制器
+        const SimpleUI = {
+            currentScreen: 'mainMenu',
+            
+            showScreen(screenName) {
+                debugLog(`切换到屏幕: ${screenName}`);
+                
+                const screens = ['mainMenu', 'levelSelect', 'gameScreen'];
+                screens.forEach(screen => {
+                    const element = document.getElementById(screen);
+                    if (element) {
+                        element.classList.add('hidden');
+                    }
+                });
+                
+                const targetScreen = document.getElementById(screenName);
+                if (targetScreen) {
+                    targetScreen.classList.remove('hidden');
+                    this.currentScreen = screenName;
+                    
+                    if (screenName === 'levelSelect') {
+                        this.createLevelGrid();
+                    } else if (screenName === 'gameScreen') {
+                        this.initGameScreen();
+                    }
+                }
+            },
+            
+            createLevelGrid() {
+                const grid = document.getElementById('levelGrid');
+                if (!grid) return;
+                
+                grid.innerHTML = '';
+                
+                for (let i = 1; i <= 100; i++) {
+                    const btn = document.createElement('button');
+                    btn.className = 'level-btn';
+                    btn.textContent = i.toString();
+                    btn.onclick = () => this.startLevel(i);
+                    
+                    // 检查关卡是否已完成
+                    if (GameEngine && GameEngine.unlockedLevels && GameEngine.unlockedLevels[i] && i > 1) {
+                        // 如果关卡i已解锁，说明关卡i-1已完成（除了第一关）
+                        if (i === 2 || GameEngine.unlockedLevels[i-1]) {
+                            // 检查是否有完成记录
+                            const completedLevels = GameEngine.getCompletedLevels();
+                            if (completedLevels[i]) {
+                                btn.classList.add('completed');
+                            }
+                        }
+                    }
+                    
+                    // 第一关如果已经解锁了第二关，说明已完成
+                    if (i === 1 && GameEngine && GameEngine.unlockedLevels && GameEngine.unlockedLevels[2]) {
+                        const completedLevels = GameEngine.getCompletedLevels();
+                        if (completedLevels[1]) {
+                            btn.classList.add('completed');
+                        }
+                    }
+                    
+                    grid.appendChild(btn);
+                }
+            },
+            
+            startLevel(levelId) {
+                debugLog(`启动关卡 ${levelId}`);
+                this.showScreen('gameScreen');
+                
+                if (GameEngine) {
+                    GameEngine.startLevel(levelId);
+                } else {
+                    setTimeout(() => {
+                        if (GameEngine) {
+                            GameEngine.startLevel(levelId);
+                        }
+                    }, 500);
+                }
+            },
+            
+            initGameScreen() {
+                const canvas = document.getElementById('gameCanvas');
+                if (canvas && GameEngine) {
+                    setTimeout(() => {
+                        GameEngine.initCanvas();
+                        GameEngine.render();
+                    }, 100);
+                }
+            }
+        };
+
+        // 合并并增强游戏引擎（加入特殊宝石触发+高级评分+静音+主题颜色）
+        class SimpleGameEngine {
+            constructor(){
+                this.canvas=null; this.ctx=null; this.gridSize=8; this.tileSize=60; this.grid=[]; this.score=0; this.moves=0; this.baseMoves=20; this.levelId=1; this.targetScore=400; this.selectedGem=null; this.isPlaying=false; this.gemTypes=6;
+                this.allColors=['#ff5722','#2196f3','#4caf50','#ffeb3b','#9c27b0','#ff9800','#00bcd4','#8bc34a','#e91e63'];
+                this.gemColors=this.allColors.slice(0,this.gemTypes);
+                this.animating=false; this.particles=[]; this.unlockedLevels=this.loadUnlocked(); this.audio=this.initAudio(); this.isMuted=false; this.comboChain=0; this.lastClearTime=0; this.accentColors=['#ff6b6b','#4ecdc4','#45b7d1','#96ceb4','#ffa94d','#9775fa','#74c0fc','#63e6be','#f06595'];
+                this.currentChain=0; this.effects=[]; this.currentTool=null;
+                this.images=[]; this.audioUnlocked=false; this.colorToolAvailable=true; // 新增
+                this.imageWarned=false; // 图片加载失败提示只显示一次
+                this.preloadImages();
+            }
+            preloadImages(){
+                console.log("=== 开始预加载宝石图片 ===");
+                this.imagesLoadedCount = 0;
+                this.imagesFailedCount = 0;
+                this.totalImages = this.allColors.length;
+                
+                for(let i=0;i<this.totalImages;i++){
+                    const img=new Image();
+                    // 移除crossOrigin设置，可能导致本地文件加载问题
+                    
+                    img.onload=()=>{
+                        console.log(`✓ 成功加载宝石图片 ${i}: images/gem${i}.png`);
+                        img.loaded = true;
+                        this.imagesLoadedCount++;
+                        this.checkImageLoadComplete();
+                    };
+                    
+                    img.onerror=(e)=>{ 
+                        console.error(`✗ 无法加载宝石图片 ${i}: images/gem${i}.png`, e);
+                        img.failed=true; 
+                        this.imagesFailedCount++;
+                        this.checkImageLoadComplete();
+                    };
+                    
+                    // 先设置图片对象，再设置src触发加载
+                    this.images[i]=img;
+                    // 添加时间戳避免缓存问题
+                    const timestamp = new Date().getTime();
+                    img.src=`images/gem${i}.png?t=${timestamp}`;
+                }
+                debugLog(`尝试加载 ${this.totalImages} 个宝石图片...`);
+            }
+            
+            checkImageLoadComplete() {
+                if(this.imagesLoadedCount + this.imagesFailedCount >= this.totalImages) {
+                    const message = `图片加载完成: 成功 ${this.imagesLoadedCount}/${this.totalImages}, 失败 ${this.imagesFailedCount}/${this.totalImages}`;
+                    console.log("=== " + message + " ===");
+                    debugLog(message);
+                    
+                    if(this.imagesLoadedCount === 0) {
+                        debugLog("警告: 所有图片加载失败，将使用彩色圆形替代");
+                    }
+                }
+            }
+            // 音频
+            initAudio(){
+                console.log("=== 初始化音频系统 ===");
+                const audioElements = {
+                    bg:document.getElementById('bgMusic'),
+                    pop:document.getElementById('popSound'),
+                    combo:document.getElementById('comboSound'),
+                    win:document.getElementById('winSound'),
+                    lose:document.getElementById('loseSound')
+                };
+                
+                // 检查音频元素是否存在
+                Object.keys(audioElements).forEach(key => {
+                    if(!audioElements[key]) {
+                        console.error(`音频元素不存在: ${key}`);
+                    } else {
+                        console.log(`✓ 音频元素已找到: ${key}`);
+                        // 设置音频属性
+                        audioElements[key].preload = 'auto';
+                        audioElements[key].volume = 0.6;
+                    }
+                });
+                
+                return audioElements;
+            }
+            ensureAudioUnlock(){
+                if(this.audioUnlocked) return;
+                
+                console.log("=== 设置音频解锁机制 ===");
+                
+                const unlock=()=>{
+                    debugLog("用户交互触发，尝试解锁音频...");
+                    let unlockedCount = 0;
+                    const audioElements = ['bg','pop','combo','win','lose'];
+                    let totalElements = audioElements.length;
+                    
+                    audioElements.forEach(k => { 
+                        const a=this.audio[k]; 
+                        if(a){ 
+                            try{
+                                // 使用静音方式触发以避免意外的声音
+                                const originalVolume = a.volume;
+                                a.volume = 0.001;
+                                
+                                // 重置播放位置
+                                a.currentTime = 0;
+                                
+                                const playPromise = a.play();
+                                
+                                if(playPromise !== undefined) {
+                                    playPromise
+                                        .then(() => {
+                                            a.pause(); 
+                                            a.currentTime=0;
+                                            a.volume = originalVolume;
+                                            unlockedCount++;
+                                            console.log(`✓ 音频 ${k} 解锁成功`);
+                                            
+                                            // 当所有音频都解锁后显示提示
+                                            if(unlockedCount === totalElements) {
+                                                this.audioUnlocked = true;
+                                                this.showTip('🎵 音频系统已解锁', 250, 220);
+                                                debugLog("音频系统完全解锁");
+                                                this.removeAudioUnlockButton();
+                                            }
+                                        })
+                                        .catch(e => {
+                                            console.error(`✗ 音频 ${k} 解锁失败:`, e);
+                                            unlockedCount++;
+                                            if(unlockedCount === totalElements) {
+                                                this.audioUnlocked = true; // 即使部分失败也标记为已尝试
+                                                this.showTip('🎵 音频部分解锁', 250, 220);
+                                                this.removeAudioUnlockButton();
+                                            }
+                                        });
+                                } else {
+                                    // 旧版浏览器不返回Promise
+                                    setTimeout(() => {
+                                        a.pause(); 
+                                        a.currentTime=0;
+                                        a.volume = originalVolume;
+                                    }, 100);
+                                    unlockedCount++;
+                                    if(unlockedCount === totalElements) {
+                                        this.audioUnlocked = true;
+                                        this.removeAudioUnlockButton();
+                                    }
+                                }
+                            } catch(e) {
+                                console.error(`尝试解锁音频 ${k} 出错:`, e);
+                                unlockedCount++;
+                                if(unlockedCount === totalElements) {
+                                    this.audioUnlocked = true;
+                                    this.removeAudioUnlockButton();
+                                }
+                            } 
+                        } else {
+                            console.warn(`音频元素 ${k} 不存在`);
+                            unlockedCount++;
+                            if(unlockedCount === totalElements) {
+                                this.audioUnlocked = true;
+                                this.removeAudioUnlockButton();
+                            }
+                        }
+                    });
+                };
+                
+                // 绑定多种事件确保兼容性
+                document.addEventListener('click', unlock, {once:true});
+                document.addEventListener('touchstart', unlock, {once:true});
+                document.addEventListener('keydown', unlock, {once:true});
+                
+                // 创建明显的音频解锁按钮
+                this.createAudioUnlockButton(unlock);
+            }
+            
+            createAudioUnlockButton(unlockFunction) {
+                // 移除已存在的按钮
+                this.removeAudioUnlockButton();
+                
+                const unlockBtn = document.createElement('button');
+                unlockBtn.id = 'audioUnlockButton';
+                unlockBtn.textContent = '🎵 点击解锁音频';
+                unlockBtn.className = 'btn btn-primary';
+                unlockBtn.style.cssText = `
+                    position: fixed;
+                    top: 10px;
+                    left: 10px;
+                    z-index: 10000;
+                    animation: pulse 2s infinite, glow 3s infinite;
+                    font-weight: bold;
+                    border: 2px solid #fff;
+                `;
+                
+                unlockBtn.onclick = () => {
+                    unlockFunction();
+                };
+                
+                document.body.appendChild(unlockBtn);
+                
+                // 10秒后自动隐藏按钮
+                setTimeout(() => {
+                    this.removeAudioUnlockButton();
+                }, 10000);
+            }
+            
+            removeAudioUnlockButton() {
+                const existingBtn = document.getElementById('audioUnlockButton');
+                if(existingBtn && existingBtn.parentNode) {
+                    existingBtn.parentNode.removeChild(existingBtn);
+                }
+            }
+            loadAudioPack(name){ 
+                console.log(`=== 尝试加载音频包: ${name} ===`);
+                debugLog(`开始加载音频包: ${name}`);
+                
+                if(name==='9439'){ 
+                    const map={bg:'bg',pop:'pop',combo:'combo',win:'win',lose:'lose'}; 
+                    let loadedCount = 0;
+                    let errorCount = 0;
+                    let totalCount = Object.keys(map).length;
+                    
+                    const checkComplete = () => {
+                        if(loadedCount + errorCount >= totalCount) {
+                            const message = `音频包加载完成: 成功 ${loadedCount}/${totalCount}, 失败 ${errorCount}/${totalCount}`;
+                            console.log("=== " + message + " ===");
+                            debugLog(message);
+                            
+                            if(loadedCount > 0) {
+                                this.showTip('🎵 9439音效包加载完成',250,220);
+                            } else {
+                                this.showTip('⚠️ 音效包加载失败',250,220);
+                            }
+                        }
+                    };
+                    
+                    for(const k in map){ 
+                        const el=this.audio[k]; 
+                        if(el){ 
+                            const url = `audio/9439/${map[k]}.mp3`;
+                            console.log(`开始加载音频: ${url}`);
+                            
+                            // 添加时间戳避免缓存问题
+                            const timestamp = new Date().getTime();
+                            const urlWithTimestamp = `${url}?t=${timestamp}`;
+                            
+                            el.oncanplaythrough = () => {
+                                console.log(`✓ 音频加载成功: ${url}`);
+                                loadedCount++;
+                                checkComplete();
+                            };
+                            
+                            el.onloadeddata = () => {
+                                console.log(`✓ 音频数据加载: ${url}`);
+                            };
+                            
+                            el.onerror = (e) => {
+                                console.error(`✗ 加载音频失败: ${url}`, e);
+                                errorCount++;
+                                checkComplete();
+                            };
+                            
+                            // 设置源并开始加载
+                            try {
+                                el.src = urlWithTimestamp; 
+                                el.load();
+                            } catch(e) {
+                                console.error(`设置音频源失败: ${url}`, e);
+                                errorCount++;
+                                checkComplete();
+                            }
+                        } else {
+                            console.error(`音频元素不存在: ${k}`);
+                            errorCount++;
+                            checkComplete();
+                        }
+                    }
+                    
+                    // 确保音频解锁
+                    this.ensureAudioUnlock(); 
+                } else {
+                    console.warn(`未知的音频包: ${name}`);
+                    debugLog(`未知的音频包: ${name}`);
+                }
+            }
+            play(name,vol=0.6){ 
+                if(this.isMuted) {
+                    //console.log(`音频已静音，跳过播放: ${name}`);
+                    return;
+                } 
+                
+                const a=this.audio[name]; 
+                if(!a) {
+                    console.warn(`音频元素不存在: ${name}`);
+                    return;
+                } 
+                
+                try{ 
+                    // 检查音频是否可以播放
+                    if(a.readyState >= 2) { // HAVE_CURRENT_DATA 或更高
+                        a.currentTime=0; 
+                        a.volume=vol; 
+                        
+                        const playPromise = a.play();
+                        if(playPromise !== undefined) {
+                            playPromise
+                                .then(() => {
+                                    //console.log(`音频播放成功: ${name}`);
+                                })
+                                .catch(error => {
+                                    console.error(`播放${name}失败:`, error);
+                                    // 如果是自动播放限制导致的错误，尝试解锁音频
+                                    if(error.name === "NotAllowedError") {
+                                        console.log("检测到自动播放限制，尝试解锁音频");
+                                        this.ensureAudioUnlock();
+                                    }
+                                });
+                        }
+                    } else {
+                        console.warn(`音频 ${name} 尚未准备好播放 (readyState: ${a.readyState})`);
+                    }
+                }catch(e){
+                    console.error(`播放${name}异常:`, e);
+                } 
+            }
+            toggleMute(){ this.isMuted=!this.isMuted; const btn=document.getElementById('muteBtn'); if(btn) btn.textContent=this.isMuted?'🔇 解除静音':'🔊 静音'; if(!this.isMuted){ this.play('bg',0.4);} else { Object.values(this.audio).forEach(a=>{try{a.pause();}catch(e){}});} }
+            // 存档
+            loadUnlocked(){ try{ const d=localStorage.getItem('match3_unlocked'); if(d) return JSON.parse(d);}catch(e){} return {1:true}; }
+            saveUnlocked(){ try{ localStorage.setItem('match3_unlocked',JSON.stringify(this.unlockedLevels)); }catch(e){} }
+            
+            // 完成关卡记录
+            getCompletedLevels(){ try{ const d=localStorage.getItem('match3_completed'); if(d) return JSON.parse(d);}catch(e){} return {}; }
+            saveCompletedLevel(levelId){ try{ const completed=this.getCompletedLevels(); completed[levelId]=true; localStorage.setItem('match3_completed',JSON.stringify(completed)); }catch(e){} }
+            // 画布
+            initCanvas(){ if(this.canvas) return true; this.canvas=document.getElementById('gameCanvas'); if(!this.canvas) return false; this.ctx=this.canvas.getContext('2d'); if(!this.ctx) return false; const size=Math.min(this.canvas.width,this.canvas.height); this.tileSize=size/this.gridSize; this.canvas.onclick=e=>this.handleClick(e); requestAnimationFrame(()=>this.render()); return true; }
+            // 关卡配置
+            levelConfig(id){ 
+                // 更平滑的难度曲线，适应100关
+                const target = 400 + (id-1) * 120 + Math.floor((id-1)/10) * 200; // 每10关增加额外难度
+                const moves = Math.max(15, this.baseMoves - Math.floor((id-1)/5)); // 更缓慢的步数减少
+                return {target, moves}; 
+            }
+            setThemeColor(id){ const color=this.accentColors[(id-1)%this.accentColors.length]; document.body.style.background=`linear-gradient(135deg, ${color} 0%, #222 100%)`; }
+            startLevel(id){ if(!this.initCanvas()){ showError('画布初始化失败'); return;} if(id!==0 && !this.unlockedLevels[id]){ alert('该关卡未解锁'); return;} this.levelId=id===0?'自由':id; const cfg=id===0?{target:0,moves:9999}:this.levelConfig(id); if(id!==0){ this.gemTypes=Math.min(3+Math.floor((id-1)/8),this.allColors.length); this.gemColors=this.allColors.slice(0,this.gemTypes);} this.targetScore=cfg.target; this.moves=cfg.moves; this.score=0; this.selectedGem=null; this.isPlaying=true; this.comboChain=0; this.currentChain=0; this.effects=[]; this.currentTool=null; this.colorToolAvailable=true; // 重置一次性彩虹工具
+                const colorBtn=document.getElementById('toolColorBomb'); if(colorBtn){ colorBtn.disabled=false; colorBtn.classList.remove('active'); colorBtn.style.opacity='1'; }
+                this.generateInitialGrid(); this.placeObstacles(); this.updateObjectiveUI(); this.updateUI(); this.setThemeColor(id===0?1:id); this.play('bg',0.3); this.ensureAudioUnlock();
+            }
+            updateObjectiveUI(){ const l=document.getElementById('currentLevel'); const o=document.getElementById('objective'); if(l) l.textContent=this.levelId; if(o) o.textContent=this.levelId==='自由'?'自由模式：无限分数':`目标分数: ${this.targetScore}`; }
+            // 初始化棋盘避免初始匹配
+            generateInitialGrid(){ this.grid=[]; for(let y=0;y<this.gridSize;y++){ this.grid[y]=[]; for(let x=0;x<this.gridSize;x++){ let type; do{ type=Math.floor(Math.random()*this.gemTypes);} while(this.causesImmediateMatch(x,y,type)); this.grid[y][x]={type,x,y,special:null}; } } }
+            causesImmediateMatch(x,y,type){ if(x>=2 && this.grid[y][x-1] && this.grid[y][x-2] && this.grid[y][x-1].type===type && this.grid[y][x-2].type===type) return true; if(y>=2 && this.grid[y-1] && this.grid[y-2] && this.grid[y-1][x] && this.grid[y-2][x] && this.grid[y-1][x].type===type && this.grid[y-2][x].type===type) return true; return false; }
+            // 障碍放置：stone(阻挡) 与 冰(锁定宝石)
+            placeObstacles(){ 
+                if(this.levelId==='自由') return; 
+                // 更平滑的障碍增长曲线，适应100关
+                const stoneProb = Math.min(0.02 + (this.levelId-1) * 0.002, 0.15); 
+                const iceProb = Math.min(0.03 + (this.levelId-1) * 0.003, 0.25); 
+                for(let y=0;y<this.gridSize;y++) 
+                    for(let x=0;x<this.gridSize;x++){ 
+                        if(Math.random()<stoneProb){ 
+                            this.grid[y][x]={obstacle:'stone',hp:2,x,y}; 
+                        } else if(Math.random()<iceProb){ 
+                            const g=this.grid[y][x]; 
+                            if(g) g.locked=1; 
+                        } 
+                    } 
+            }
+            // 输入
+            handleClick(e){ if(!this.isPlaying || this.animating) return; const r=this.canvas.getBoundingClientRect(); const x=Math.floor((e.clientX-r.left)/this.tileSize); const y=Math.floor((e.clientY-r.top)/this.tileSize); if(x<0||x>=this.gridSize||y<0||y>=this.gridSize) return; if(this.currentTool){ this.useTool(x,y); return;} const cell=this.grid[y][x]; if(cell && cell.locked){ this.showTip('🔒 被冰封',(x+0.5)*this.tileSize,(y+0.5)*this.tileSize); return;} if(!this.selectedGem){ this.selectedGem={x,y}; } else { if(this.selectedGem.x===x && this.selectedGem.y===y){ this.selectedGem=null; } else if(this.isAdjacent(this.selectedGem,{x,y})){ this.attemptSwap(this.selectedGem,{x,y}); this.selectedGem=null; } else { this.selectedGem={x,y}; } } }
+    // 道具
+    useTool(x,y){ const tool=this.currentTool; const cell=this.grid[y][x]; if(tool==='color'){ if(!this.colorToolAvailable){ this.showTip('🚫 已使用',(x+0.5)*this.tileSize,(y+0.5)*this.tileSize); this.afterToolAffect(); return;} if(cell && !cell.obstacle){ cell.special='color'; this.showTip('🌈',(x+0.5)*this.tileSize,(y+0.5)*this.tileSize); this.colorToolAvailable=false; const btn=document.getElementById('toolColorBomb'); if(btn){ btn.disabled=true; btn.classList.remove('active'); btn.style.opacity='.45'; } } }
+        else if(tool==='shuffle'){ if(this.shuffleBoard()) this.showTip('🔁 已洗牌',250,240); }
+        this.afterToolAffect(); }
+    afterToolAffect(){ this.currentTool=null; this.highlightTools(); this.updateUI(); }
+    activateTool(name){ if(this.animating) return; this.currentTool=this.currentTool===name?null:name; this.highlightTools(); }
+    highlightTools(){ const map={toolShuffle:'shuffle',toolColorBomb:'color'}; Object.keys(map).forEach(id=>{ const el=document.getElementById(id); if(el){ if(this.currentTool===map[id]) el.classList.add('active'); else el.classList.remove('active'); } }); }
+    // 基础逻辑
+    isAdjacent(a,b){ return (Math.abs(a.x-b.x)+Math.abs(a.y-b.y))===1; }
+    attemptSwap(a,b){ const g1=this.grid[a.y][a.x]; const g2=this.grid[b.y][b.x]; if((g1&&g1.locked)||(g2&&g2.locked)) { this.showTip('🔒 无法移动',(b.x+0.5)*this.tileSize,(b.y+0.5)*this.tileSize); return; } this.swapRaw(a,b); const s1=this.grid[a.y][a.x]; const s2=this.grid[b.y][b.x]; const specialInvolved=s1.special||s2.special; let groups=this.findMatches(); if(groups.length===0 && specialInvolved){ this.moves--; this.triggerSpecialSwap(s1,s2); this.updateUI(); return;} if(groups.length===0){ this.swapRaw(a,b); this.play('combo',0.2);} else { this.moves--; this.processMatches(groups,1);} this.updateUI(); }
+    swapRaw(a,b){ const g1=this.grid[a.y][a.x]; const g2=this.grid[b.y][b.x]; this.grid[a.y][a.x]=g2; if(g2){g2.x=a.x; g2.y=a.y;} this.grid[b.y][b.x]=g1; if(g1){g1.x=b.x; g1.y=b.y;} }
+    triggerSpecialSwap(g1,g2){ const isLine=g=>g&&(g.special==='lineH'||g.special==='lineV'); if(g1.special==='color'&&g2.special==='color'){ const cells=[]; for(let y=0;y<this.gridSize;y++)for(let x=0;x<this.gridSize;x++) cells.push({x,y}); this.clearCells(cells,'双彩虹全清',80); this.showTip('🌈🌈 全板清除!',250,250); this.cascade(1); return; } if((g1.special==='color'&&isLine(g2))||(g2.special==='color'&&isLine(g1))){ const lineGem=g1.special==='color'?g2:g1; const targetType=lineGem.type; const cellsSet=new Set(); for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++){ const cell=this.grid[y][x]; if(cell && cell.type===targetType){ if(lineGem.special==='lineH'){ for(let cx=0;cx<this.gridSize;cx++) cellsSet.add(y+','+cx);} else { for(let cy=0;cy<this.gridSize;cy++) cellsSet.add(cy+','+x);} } } const cells=[]; cellsSet.forEach(k=>{ const [y,x]=k.split(',').map(Number); cells.push({x,y}); }); this.clearCells(cells,'彩虹线性闪电',90); this.showTip('🌈⚡ 彩虹线性闪电!',250,250); this.cascade(1); return;} if(g1.special==='color'||g2.special==='color'){ const target=g1.special==='color'?g2:g1; const cells=[]; for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++) if(this.grid[y][x].type===target.type) cells.push({x,y}); cells.push({x:target.x,y:target.y}); this.clearCells(cells,'彩虹清色',70); this.showTip('🌈 清除颜色!',250,250); this.cascade(1); return; } if(isLine(g1)&&isLine(g2)){ const rows=new Set([g1.y,g2.y]); const cols=new Set([g1.x,g2.x]); [...rows].forEach(r=>{ if(r-1>=0) rows.add(r-1); if(r+1<this.gridSize) rows.add(r+1); }); [...cols].forEach(c=>{ if(c-1>=0) cols.add(c-1); if(c+1<this.gridSize) cols.add(c+1); }); const cells=[]; rows.forEach(r=>{ this.addLineEffect('h',r); for(let x=0;x<this.gridSize;x++) cells.push({x,y:r});}); cols.forEach(c=>{ this.addLineEffect('v',c); for(let y=0;y<this.gridSize;y++) cells.push({x:c,y});}); this.clearCells(cells,'双线性强化',65); this.showTip('⚡⚡ 双线性强化!',250,250); this.cascade(1); return;} const toClear=[]; if(isLine(g1)) this.collectLine(g1,toClear); if(isLine(g2)) this.collectLine(g2,toClear); this.clearCells(toClear,'线性消除',60); this.showTip('⚡ 线性消除',250,250); this.cascade(1); }
+    collectLine(g,arr){ if(!g) return; if(g.special==='lineH'){ this.addLineEffect('h',g.y); for(let x=0;x<this.gridSize;x++) arr.push({x,y:g.y}); } else if(g.special==='lineV'){ this.addLineEffect('v',g.x); for(let y=0;y<this.gridSize;y++) arr.push({x:g.x,y}); } }
+    addLineEffect(orientation,index){ this.effects.push({orientation,index,progress:0}); }
+    clearCells(cells,reason,base=50){ const uniq=new Set(); cells.forEach(c=>uniq.add(c.x+','+c.y)); let count=0; uniq.forEach(key=>{ const [xS,yS]=key.split(','); const x=+xS,y=+yS; const cell=this.grid[y]&&this.grid[y][x]; if(!cell) return; if(cell.obstacle==='stone'){ cell.hp--; if(cell.hp<=0){ this.spawnParticles(x,y,{type:0}); this.grid[y][x]=null; count++; } return; } if(cell.locked){ cell.locked--; this.spawnParticles(x,y,cell); count++; return; } this.spawnParticles(x,y,cell); this.grid[y][x]=null; count++; }); const gained=count*base; this.score+=gained; this.play('pop',0.55); this.updateUI(); }
+    findMatches(){ const groups=[]; // 水平
+        for(let y=0;y<this.gridSize;y++){ let run=[]; for(let x=0;x<this.gridSize;x++){ const c=this.grid[y][x]; if(!c||c.obstacle==='stone'){ if(run.length>=3) groups.push({cells:run.slice(),orientation:'h'}); run=[]; continue;} if(run.length===0||c.type===run[run.length-1].type) run.push(c); else { if(run.length>=3) groups.push({cells:run.slice(),orientation:'h'}); run=[c]; } } if(run.length>=3) groups.push({cells:run.slice(),orientation:'h'}); }
+        for(let x=0;x<this.gridSize;x++){ let run=[]; for(let y=0;y<this.gridSize;y++){ const c=this.grid[y][x]; if(!c||c.obstacle==='stone'){ if(run.length>=3) groups.push({cells:run.slice(),orientation:'v'}); run=[]; continue;} if(run.length===0||c.type===run[run.length-1].type) run.push(c); else { if(run.length>=3) groups.push({cells:run.slice(),orientation:'v'}); run=[c]; } } if(run.length>=3) groups.push({cells:run.slice(),orientation:'v'}); }
+        return groups; }
+    processMatches(groups,chain){ if(groups.length===0) return; this.animating=true; const toRemove=new Set(); const specials=[]; let baseScore=0; groups.forEach(g=>{ const len=g.cells.length; g.cells.forEach(c=>toRemove.add(c.y+','+c.x)); if(len===3) baseScore+=60; else if(len===4){ baseScore+=120; const p=g.cells[1]; specials.push({x:p.x,y:p.y,type:p.type,special:g.orientation==='h'?'lineH':'lineV'}); } else if(len>=5){ baseScore+=200+(len-5)*40; const p=g.cells[2]; specials.push({x:p.x,y:p.y,type:p.type,special:'color'}); } }); const perGemBonus=toRemove.size*10; baseScore+=perGemBonus; const multiplier=1+(chain-1)*0.5; const gained=Math.floor(baseScore*multiplier); this.score+=gained; this.currentChain=chain; this.play(chain>1?'combo':'pop', chain>1?0.9:0.6); toRemove.forEach(k=>{ const [y,x]=k.split(',').map(Number); this.spawnParticles(x,y,this.grid[y][x]); this.grid[y][x]=null; }); specials.forEach(sp=>{ this.grid[sp.y][sp.x]={type:sp.type,x:sp.x,y:sp.y,special:sp.special}; }); this.showTip(`+${gained}${chain>1?` (连锁x${multiplier.toFixed(1)})`:''}`,250,260-(chain-1)*28); this.updateUI(); this.cascade(chain); }
+    cascade(chain){ for(let x=0;x<this.gridSize;x++){ for(let y=this.gridSize-1;y>=0;y--){ if(this.grid[y][x]==null){ for(let k=y-1;k>=0;k--){ if(this.grid[k][x]!=null){ this.grid[y][x]=this.grid[k][x]; this.grid[y][x].y=y; this.grid[k][x]=null; break; } } } } } for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++) if(this.grid[y][x]==null) this.grid[y][x]={type:Math.floor(Math.random()*this.gemTypes),x,y,special:null}; const newGroups=this.findMatches(); if(newGroups.length>0){ setTimeout(()=>this.processMatches(newGroups,chain+1),220);} else { this.animating=false; setTimeout(()=>{ this.currentChain=0; this.updateUI(); },600); this.ensureMoves(); this.postMoveCheck(); } }
+    hasPossibleMoves(){ const trySwap=(ax,ay,bx,by)=>{ const A=this.grid[ay][ax]; const B=this.grid[by][bx]; if(!A||!B||A.obstacle==='stone'||B.obstacle==='stone') return false; this.grid[ay][ax]=B; this.grid[by][bx]=A; const ok=this.findMatches().length>0; this.grid[ay][ax]=A; this.grid[by][bx]=B; return ok; }; for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++){ if(x+1<this.gridSize && trySwap(x,y,x+1,y)) return true; if(y+1<this.gridSize && trySwap(x,y,x,y+1)) return true; } return false; }
+    shuffleBoard(){ const flat=[]; for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++) if(this.grid[y][x]) flat.push(this.grid[y][x]); let attempts=0; while(attempts<60){ for(let i=flat.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [flat[i],flat[j]]=[flat[j],flat[i]]; } let idx=0; for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++){ const g=flat[idx++]; g.x=x; g.y=y; this.grid[y][x]=g; } if(this.findMatches().length===0 && this.hasPossibleMoves()) return true; attempts++; } return false; }
+    ensureMoves(){ if(!this.hasPossibleMoves()){ const ok=this.shuffleBoard(); if(ok) this.showTip('🔁 无可行动作，自动洗牌',250,240); else this.showTip('⚠️ 洗牌失败',250,240);} }
+    postMoveCheck(){ if(this.levelId!=='自由' && this.score>=this.targetScore){ this.levelWin(); } else if(this.moves<=0 && this.levelId!=='自由'){ this.levelFail(); } }
+    levelWin(){ 
+        this.play('win',0.9); 
+        
+        // 保存完成记录
+        this.saveCompletedLevel(this.levelId);
+        
+        alert(`关卡 ${this.levelId} 完成! 分数: ${this.score}`); 
+        if(!this.unlockedLevels[this.levelId+1]){ 
+            this.unlockedLevels[this.levelId+1]=true; 
+            this.saveUnlocked(); 
+        } 
+        this.isPlaying=false; 
+        SimpleUI.showScreen('levelSelect'); 
+    }
+    levelFail(){ this.play('lose',0.9); alert(`关卡失败！分数: ${this.score}`); this.isPlaying=false; SimpleUI.showScreen('levelSelect'); }
+    // 视觉
+    spawnParticles(x,y,gem){ if(!gem) return; const px=x*this.tileSize+this.tileSize/2; const py=y*this.tileSize+this.tileSize/2; for(let i=0;i<10;i++){ this.particles.push({x:px,y:py,vx:(Math.random()-0.5)*5,vy:(Math.random()-0.5)*5,life:35,color:this.gemColors[gem.type%this.gemColors.length]}); } }
+    updateParticles(){ this.particles=this.particles.filter(p=>p.life>0); this.particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.07; p.life--; }); this.effects=this.effects.filter(e=>e.progress<1); this.effects.forEach(e=>{ e.progress+=0.04; }); }
+    updateUI(){ const s=document.getElementById('score'); const m=document.getElementById('moves'); if(s) s.textContent=this.score; if(m) m.textContent=(this.levelId==='自由')?'∞':this.moves; const c=document.getElementById('chainInfo'); if(c) c.textContent=this.currentChain>1?`${this.currentChain}连 (x${(1+(this.currentChain-1)*0.5).toFixed(1)})`:'-'; }
+    showTip(text,x,y){ const layer=document.getElementById('tipLayer'); if(!layer) return; const d=document.createElement('div'); d.className='floating-tip'; d.textContent=text; d.style.left=x+'px'; d.style.top=y+'px'; layer.appendChild(d); setTimeout(()=>{ if(d.parentNode) d.parentNode.removeChild(d); },1300); }
+            drawGem(x,y,type){ 
+                const gem=this.grid[y][x]; 
+                if(!gem) return; 
+                
+                const img=this.images[type%this.images.length]; 
+                const cx=x*this.tileSize; 
+                const cy=y*this.tileSize; 
+                
+                // 检查图片是否可用 - 更严格的检查
+                const canDrawImg = img && img.complete && !img.failed && img.naturalWidth>0 && img.loaded && img.src; 
+                
+                if(canDrawImg){ 
+                    try {
+                        this.ctx.drawImage(img, cx+4, cy+4, this.tileSize-8, this.tileSize-8);
+                        // 绘制特殊标记
+                        this.drawSpecialMarkers(gem, cx, cy);
+                    } catch(e) {
+                        console.error(`绘制图片失败 (type=${type}):`, e);
+                        this.drawFallbackGem(cx, cy, type, gem);
+                    }
+                } else { 
+                    // 回退到颜色圆形
+                    this.drawFallbackGem(cx, cy, type, gem);
+                    
+                    // 只在第一次显示提示，避免刷屏
+                    if(!this.imageWarned){ 
+                        this.showTip('🖼️ 使用颜色替代宝石图片', 250, 200); 
+                        this.imageWarned=true; 
+                        console.log(`使用颜色替代宝石图片 (检测到 ${this.imagesLoadedCount} 张图片加载成功)`);
+                    }
+                }
+            }        // 提取绘制备用宝石的方法
+        drawFallbackGem(cx, cy, type, gem) {
+            const r=this.tileSize/2-6; 
+            const mx=cx+this.tileSize/2; 
+            const my=cy+this.tileSize/2; 
+            this.ctx.fillStyle=this.gemColors[type%this.gemColors.length]; 
+            this.ctx.beginPath(); 
+            this.ctx.arc(mx, my, r, 0, Math.PI*2); 
+            this.ctx.fill();
+            
+            // 绘制一个白色边框，让宝石更易区分
+            this.ctx.strokeStyle = '#fff';
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+            
+            // 显示宝石类型编号帮助调试
+            this.ctx.fillStyle = '#fff';
+            this.ctx.font = '14px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.textBaseline = 'middle';
+            this.ctx.fillText(type.toString(), mx, my);
+            
+            // 绘制特殊标记
+            if(gem) {
+                this.drawSpecialMarkers(gem, cx, cy);
+            }
+            
+            // 高光
+            this.ctx.fillStyle='rgba(255,255,255,0.35)'; 
+            this.ctx.beginPath(); 
+            this.ctx.arc(cx+this.tileSize/2 - this.tileSize/6, cy+this.tileSize/2 - this.tileSize/6, this.tileSize/6,0,Math.PI*2); 
+            this.ctx.fill();
+        }
+        
+        // 分离特殊标记绘制逻辑
+        drawSpecialMarkers(gem, cx, cy) {
+            if(!gem.special) return;
+            
+            this.ctx.save(); 
+            this.ctx.strokeStyle='#fff'; 
+            this.ctx.lineWidth=4;
+            
+            if(gem.special==='lineH'){ 
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(cx+8,cy+this.tileSize/2); 
+                this.ctx.lineTo(cx+this.tileSize-8,cy+this.tileSize/2); 
+                this.ctx.stroke(); 
+            }
+            else if(gem.special==='lineV'){ 
+                this.ctx.beginPath(); 
+                this.ctx.moveTo(cx+this.tileSize/2,cy+8); 
+                this.ctx.lineTo(cx+this.tileSize/2,cy+this.tileSize-8); 
+                this.ctx.stroke(); 
+            }
+            else if(gem.special==='color'){ 
+                this.ctx.fillStyle='rgba(255,255,255,0.75)'; 
+                this.ctx.beginPath(); 
+                this.ctx.arc(cx+this.tileSize/2,cy+this.tileSize/2,this.tileSize/5,0,Math.PI*2); 
+                this.ctx.fill(); 
+            }
+            
+            this.ctx.restore();
+        }
+    drawObstacle(x,y,cell){ const cx=x*this.tileSize; const cy=y*this.tileSize; this.ctx.fillStyle='#555'; this.ctx.fillRect(cx+4,cy+4,this.tileSize-8,this.tileSize-8); this.ctx.strokeStyle='#999'; this.ctx.strokeRect(cx+4,cy+4,this.tileSize-8,this.tileSize-8); this.ctx.fillStyle='#fff'; this.ctx.font='bold 16px sans-serif'; this.ctx.fillText(cell.hp,cx+this.tileSize/2-5,cy+this.tileSize/2+6); }
+    drawIce(x,y){ const cx=x*this.tileSize; const cy=y*this.tileSize; this.ctx.strokeStyle='rgba(173,216,230,0.8)'; this.ctx.lineWidth=3; this.ctx.strokeRect(cx+3,cy+3,this.tileSize-6,this.tileSize-6); }
+    render(){ if(!this.ctx) return; this.ctx.clearRect(0,0,this.canvas.width,this.canvas.height); this.ctx.strokeStyle='#2225'; this.ctx.lineWidth=1; for(let x=0;x<=this.gridSize;x++){ this.ctx.beginPath(); this.ctx.moveTo(x*this.tileSize,0); this.ctx.lineTo(x*this.tileSize,this.gridSize*this.tileSize); this.ctx.stroke(); } for(let y=0;y<=this.gridSize;y++){ this.ctx.beginPath(); this.ctx.moveTo(0,y*this.tileSize); this.ctx.lineTo(this.gridSize*this.tileSize,y*this.tileSize); this.ctx.stroke(); } for(let y=0;y<this.gridSize;y++) for(let x=0;x<this.gridSize;x++){ const cell=this.grid[y][x]; if(!cell) continue; if(cell.obstacle==='stone') this.drawObstacle(x,y,cell); else { this.drawGem(x,y,cell.type); if(cell.locked) this.drawIce(x,y); } } if(this.selectedGem){ this.ctx.strokeStyle='#ff0000'; this.ctx.lineWidth=3; this.ctx.strokeRect(this.selectedGem.x*this.tileSize+2,this.selectedGem.y*this.tileSize+2,this.tileSize-4,this.tileSize-4); } this.updateParticles(); this.particles.forEach(p=>{ this.ctx.globalAlpha=Math.max(0,p.life/35); this.ctx.fillStyle=p.color; this.ctx.fillRect(p.x-2,p.y-2,4,4); this.ctx.globalAlpha=1; }); this.effects.forEach(e=>{ const alpha=1-e.progress; this.ctx.save(); this.ctx.globalAlpha=alpha; const pulse=(Math.sin(e.progress*10)+1)/2; if(e.orientation==='h'){ const y=e.index*this.tileSize; this.ctx.fillStyle=`rgba(255,255,0,${0.35+0.35*pulse})`; this.ctx.fillRect(0,y,this.gridSize*this.tileSize,this.tileSize); } else { const x=e.index*this.tileSize; this.ctx.fillStyle=`rgba(255,255,0,${0.35+0.35*pulse})`; this.ctx.fillRect(x,0,this.tileSize,this.gridSize*this.tileSize); } this.ctx.restore(); }); requestAnimationFrame(()=>this.render()); }
+    // 控制
+    restartGame(){
+        const lvl=this.levelId==='自由'?0:this.levelId;
+        if(confirm('重新开始当前关卡?')){
+            this.startLevel(lvl);
+        }
+    }
+}
+// 重新定义 initGame 位于类外
+function initGame(){
+    debugLog('初始化游戏引擎...');
+    try {
+        GameEngine=new SimpleGameEngine();
+        const q=id=>document.getElementById(id);
+        q('startGameBtn').onclick=()=>{ GameEngine.ensureAudioUnlock(); SimpleUI.startLevel(1); };
+        q('levelSelectBtn').onclick=()=>SimpleUI.showScreen('levelSelect');
+        q('freePlayBtn').onclick=()=>{ GameEngine.ensureAudioUnlock(); SimpleUI.startLevel(0); };
+        q('backToMenuBtn').onclick=()=>SimpleUI.showScreen('mainMenu');
+        q('restartBtn').onclick=()=>GameEngine.restartGame();
+        q('backToLevelSelectBtn').onclick=()=>SimpleUI.showScreen('levelSelect');
+        q('muteBtn').onclick=()=>GameEngine.toggleMute();
+        q('toolShuffle').onclick=()=>GameEngine.activateTool('shuffle');
+        q('toolColorBomb').onclick=()=>GameEngine.activateTool('color');
+        const audioFileInput=q('audioFileInput');
+        q('loadAudioBtn').onclick=()=>{ GameEngine.loadAudioPack('9439'); audioFileInput.click(); };
+        audioFileInput.onchange=e=>{ const files=[...e.target.files]; if(!files.length) return; const map={'bg':'bgMusic','pop':'popSound','combo':'comboSound','win':'winSound','lose':'loseSound'}; files.forEach(f=>{ const name=f.name.toLowerCase(); for(const k in map){ if(name.includes(k)){ const el=q(map[k]); el.src=URL.createObjectURL(f); el.load(); break;} } }); GameEngine.showTip('🎵 自定义音效已加载',250,220); GameEngine.ensureAudioUnlock(); };
+        debugLog('游戏初始化完成'); setTimeout(()=>{const d=q('debugInfo'); if(d) d.style.display='none';},1200);
+    }catch(e){ console.error(e); showError('初始化失败: '+e.message);} }
+
+        // 全局错误监听
+        window.addEventListener('error', e=>{
+            console.error(e.error||e.message);
+            debugLog('脚本错误: '+e.message,'error');
+        });
+        window.addEventListener('unhandledrejection', e=>{
+            console.error(e.reason);
+            debugLog('未处理Promise: '+e.reason,'error');
+        });
+        
+        // 创建目录检查函数
+        function checkResourcePaths() {
+            console.log("=== 开始检查资源路径 ===");
+            debugLog("检查资源目录和文件可访问性...");
+            
+            // 检查图片路径
+            for(let i = 0; i < 3; i++) {
+                const testImage = new Image();
+                const imgPath = `images/gem${i}.png`;
+                
+                testImage.onload = () => {
+                    console.log(`✓ 图片路径正常: ${imgPath} 可以访问`);
+                    if(i === 0) debugLog("图片资源目录可访问");
+                };
+                
+                testImage.onerror = () => {
+                    console.error(`✗ 图片路径错误: ${imgPath} 无法访问`);
+                    if(i === 0) debugLog("警告: images 目录可能不存在或无权限访问");
+                };
+                
+                testImage.src = imgPath;
+            }
+            
+            // 检查音频路径
+            const testAudio = new Audio();
+            testAudio.oncanplaythrough = () => {
+                console.log("✓ 音频路径正常: audio/9439/bg.mp3 可以访问");
+                debugLog("音频资源目录可访问");
+            };
+            testAudio.onerror = () => {
+                console.error("✗ 音频路径错误: audio/9439/bg.mp3 无法访问");
+                debugLog("警告: audio/9439 目录可能不存在或无权限访问");
+            };
+            testAudio.src = "audio/9439/bg.mp3";
+            
+            // 创建目录结构提示
+            setTimeout(() => {
+                console.log("=== 资源目录结构要求 ===");
+                console.log("请确保以下目录结构存在:");
+                console.log("消消乐/");
+                console.log("├── game-ultimate.html");
+                console.log("├── images/");
+                console.log("│   ├── gem0.png  (红色宝石)");
+                console.log("│   ├── gem1.png  (蓝色宝石)");
+                console.log("│   ├── gem2.png  (绿色宝石)");
+                console.log("│   ├── gem3.png  (黄色宝石)");
+                console.log("│   ├── gem4.png  (紫色宝石)");
+                console.log("│   ├── gem5.png  (橙色宝石)");
+                console.log("│   ├── gem6.png  (青色宝石)");
+                console.log("│   ├── gem7.png  (浅绿宝石)");
+                console.log("│   └── gem8.png  (粉色宝石)");
+                console.log("└── audio/");
+                console.log("    └── 9439/");
+                console.log("        ├── bg.mp3    (背景音乐)");
+                console.log("        ├── pop.mp3   (消除音效)");
+                console.log("        ├── combo.mp3 (连击音效)");
+                console.log("        ├── win.mp3   (胜利音效)");
+                console.log("        └── lose.mp3  (失败音效)");
+                console.log("=== 注意事项 ===");
+                console.log("1. 确保文件路径和文件名完全匹配（区分大小写）");
+                console.log("2. 图片文件必须是PNG格式");
+                console.log("3. 音频文件必须是MP3格式");
+                console.log("4. 如果缺少文件，游戏会自动使用备用方案");
+            }, 1500);
+        }
+        
+        // DOM 准备后启动
+        if(document.readyState==='loading'){
+            document.addEventListener('DOMContentLoaded', () => {
+                checkResourcePaths();
+                initGame();
+            });
+        } else {
+            checkResourcePaths();
+            initGame();
+        }
+    </script>
+</body>
+</html>
